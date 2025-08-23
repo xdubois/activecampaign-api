@@ -2,19 +2,50 @@
     "name": "xdubois/activecampaign-api",
     "description": "A PHP package for interacting with the ActiveCampaign API v3",
     "type": "library",
+    "version": "1.0.0",
+    "keywords": ["activecampaign", "api", "crm", "email-marketing", "php"],
+    "homepage": "https://github.com/xdubois/activecampaign-api",
+    "license": "MIT",
     "require": {
         "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0|^10.0",
+        "phpstan/phpstan": "^1.0",
+        "squizlabs/php_codesniffer": "^3.7"
     },
     "autoload": {
         "psr-4": {
             "xdubois\\ActiveCampaign\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "xdubois\\ActiveCampaign\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
-            "name": "Your Name",
-            "email": "your.email@example.com"
+            "name": "Xavier Dubois",
+            "email": "xavier@example.com",
+            "role": "Developer"
         }
-    ]
+    ],
+    "support": {
+        "issues": "https://github.com/xdubois/activecampaign-api/issues",
+        "source": "https://github.com/xdubois/activecampaign-api"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "phpstan": "phpstan analyse src",
+        "cs-check": "phpcs src",
+        "cs-fix": "phpcbf src"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable"
 }
