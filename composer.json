@@ -2,7 +2,6 @@
     "name": "xdubois/activecampaign-api",
     "description": "A PHP package for interacting with the ActiveCampaign API v3",
     "type": "library",
-    "version": "1.0.0",
     "keywords": ["activecampaign", "api", "crm", "email-marketing", "php"],
     "homepage": "https://github.com/xdubois/activecampaign-api",
     "license": "MIT",
