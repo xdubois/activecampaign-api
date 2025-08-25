@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/xdubois/activecampaign-api/blob/main/README.md
+    about: Check the documentation for usage examples and API reference
+  - name: ActiveCampaign API Documentation
+    url: https://developers.activecampaign.com/reference/overview
+    about: Official ActiveCampaign API documentation
