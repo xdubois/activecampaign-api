@@ -20,7 +20,7 @@ class Configuration
         string $accountUrl,
         int $timeout = 30,
         int $connectTimeout = 10,
-        int $maxRetries = 3,
+        int $maxRetries = 1,
         float $retryDelay = 1.0,
         array $defaultHeaders = []
     ) {
