@@ -2,6 +2,9 @@
     "name": "xdubois/activecampaign-api",
     "description": "A PHP package for interacting with the ActiveCampaign API v3",
     "type": "library",
+    "keywords": ["activecampaign", "api", "crm", "email-marketing", "php"],
+    "homepage": "https://github.com/xdubois/activecampaign-api",
+    "license": "MIT",
     "require": {
         "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^7.0"
@@ -13,8 +16,16 @@
     },
     "authors": [
         {
-            "name": "Your Name",
-            "email": "your.email@example.com"
+            "name": "xdubois"
         }
-    ]
+    ],
+    "support": {
+        "issues": "https://github.com/xdubois/activecampaign-api/issues",
+        "source": "https://github.com/xdubois/activecampaign-api"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable"
 }
