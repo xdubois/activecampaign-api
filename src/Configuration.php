@@ -43,9 +43,6 @@ class Configuration
 
     public function setApiToken(string $apiToken): void
     {
-        if (empty(trim($apiToken))) {
-            throw new \InvalidArgumentException('API token cannot be empty');
-        }
         $this->apiToken = $apiToken;
     }
 
@@ -56,17 +53,7 @@ class Configuration
 
     public function setAccountUrl(string $accountUrl): void
     {
-        $accountUrl = rtrim($accountUrl, '/');
-        
-        if (!filter_var($accountUrl, FILTER_VALIDATE_URL)) {
-            throw new \InvalidArgumentException('Account URL must be a valid URL');
-        }
-
-        if (!preg_match('/^https:\/\/.*\.api-us\d+\.com$/', $accountUrl)) {
-            throw new \InvalidArgumentException('Account URL must be a valid ActiveCampaign API URL (e.g., https://yourapp.api-us1.com)');
-        }
-
-        $this->accountUrl = $accountUrl;
+        $this->accountUrl = rtrim($accountUrl, '/');
     }
 
     public function getTimeout(): int
