@@ -9,16 +9,9 @@
         "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^7.0"
     },
-    "require-dev": {
-    },
     "autoload": {
         "psr-4": {
             "xdubois\\ActiveCampaign\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "xdubois\\ActiveCampaign\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -30,7 +23,6 @@
         "issues": "https://github.com/xdubois/activecampaign-api/issues",
         "source": "https://github.com/xdubois/activecampaign-api"
     },
-
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true
