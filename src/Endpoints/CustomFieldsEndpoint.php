@@ -1,36 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace xdubois\ActiveCampaign\Endpoints;
 
 use xdubois\ActiveCampaign\ActiveCampaignClient;
-use xdubois\ActiveCampaign\Configuration;
 
 /**
- * Custom Fields endpoint for managing custom fields in ActiveCampaign
- * 
+ * Custom Fields endpoint for managing contact custom fields, field options,
+ * field groups and field/list relationships.
+ *
  * @link https://developers.activecampaign.com/reference/custom-fields
  */
 class CustomFieldsEndpoint extends ActiveCampaignClient
 {
     /**
-     * Constructor - supports both new Configuration object and legacy parameters for backward compatibility
-     */
-    public function __construct($apiTokenOrConfig, ?string $accountUrl = null)
-    {
-        if ($apiTokenOrConfig instanceof Configuration) {
-            parent::__construct($apiTokenOrConfig);
-        } else {
-            // Legacy constructor for backward compatibility
-            parent::__construct($apiTokenOrConfig, $accountUrl);
-        }
-    }
-
-    /**
-     * Create a new custom field
-     * 
-     * @param array $data Custom field data
-     * @return array The created custom field data
-     * @link https://developers.activecampaign.com/reference/create-a-field
+     * Create a new contact custom field.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "field" key (title, type)
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-a-contact-custom-field
      */
     public function create(array $data): array
     {
@@ -38,11 +27,10 @@ class CustomFieldsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Retrieve a specific custom field
-     * 
-     * @param int $id Custom field ID
-     * @return array The custom field data
-     * @link https://developers.activecampaign.com/reference/retrieve-a-field
+     * Retrieve a specific custom field.
+     *
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/retrieve-a-custom-field-contact
      */
     public function get(int $id): array
     {
@@ -50,11 +38,11 @@ class CustomFieldsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * List custom fields with optional filtering
-     * 
-     * @param array $queryParams Optional query parameters for filtering
-     * @return array List of custom fields with pagination info
-     * @link https://developers.activecampaign.com/reference/list-all-fields
+     * List custom fields with optional filtering.
+     *
+     * @param array<string, mixed> $queryParams
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/retrieve-fields
      */
     public function list(array $queryParams = []): array
     {
@@ -62,11 +50,10 @@ class CustomFieldsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Update an existing custom field
-     * 
-     * @param int $id Custom field ID
-     * @param array $data Updated custom field data
-     * @return array The updated custom field data
+     * Update an existing custom field.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "field" key
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/update-a-field
      */
     public function update(int $id, array $data): array
@@ -75,10 +62,9 @@ class CustomFieldsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Delete a custom field
-     * 
-     * @param int $id Custom field ID
-     * @return array Confirmation of deletion
+     * Delete a custom field.
+     *
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/delete-a-field
      */
     public function delete(int $id): array
@@ -86,12 +72,28 @@ class CustomFieldsEndpoint extends ActiveCampaignClient
         return $this->request('DELETE', "/api/3/fields/{$id}");
     }
 
+    // -------------------------------------------------------------------------
+    // Field groups (groupMembers)
+    // -------------------------------------------------------------------------
+
     /**
-     * Add a field to a group
-     * 
-     * @param array $data Group member data
-     * @return array The created group member data
-     * @link https://developers.activecampaign.com/reference/create-a-groupmember
+     * List all field group memberships.
+     *
+     * @param array<string, mixed> $queryParams
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/get-all-custom-field-groups
+     */
+    public function listGroupMembers(array $queryParams = []): array
+    {
+        return $this->request('GET', '/api/3/groupMembers', ['query' => $queryParams]);
+    }
+
+    /**
+     * Add a field to a field group.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "groupMember" key (rel_id, group_id, ordernum)
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/add-custom-field-to-field-group
      */
     public function addToGroup(array $data): array
     {
@@ -99,51 +101,78 @@ class CustomFieldsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Get a field group
-     * 
-     * @param int $groupId Group ID
-     * @return array The group data
-     * @link https://developers.activecampaign.com/reference/retrieve-a-groupmember
+     * Retrieve a field group membership.
+     *
+     * @param int $groupMemberId Group member ID
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/get-custom-field-to-field-group
      */
-    public function getFieldGroup(int $groupId): array
+    public function getFieldGroup(int $groupMemberId): array
     {
-        return $this->request('GET', "/api/3/groupMembers/{$groupId}");
+        return $this->request('GET', "/api/3/groupMembers/{$groupMemberId}");
     }
 
     /**
-     * Update a field group
-     * 
-     * @param int $groupId Group ID
-     * @param array $data Updated group data
-     * @return array The updated group data
-     * @link https://developers.activecampaign.com/reference/update-a-groupmember
+     * Update a field group membership.
+     *
+     * @param int $groupMemberId Group member ID
+     * @param array<string, mixed> $data Payload with a top-level "groupMember" key
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/update-custom-field-field-group
      */
-    public function updateFieldGroup(int $groupId, array $data): array
+    public function updateFieldGroup(int $groupMemberId, array $data): array
     {
-        return $this->request('PUT', "/api/3/groupMembers/{$groupId}", ['json' => $data]);
+        return $this->request('PUT', "/api/3/groupMembers/{$groupMemberId}", ['json' => $data]);
     }
 
     /**
-     * Remove a field from a group
-     * 
-     * @param int $groupId Group ID
-     * @return array Confirmation of removal
-     * @link https://developers.activecampaign.com/reference/delete-a-groupmember
+     * Remove a field from a field group.
+     *
+     * @param int $groupMemberId Group member ID
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/delete-custom-field-field-group
      */
-    public function deleteFromGroup(int $groupId): array
+    public function deleteFromGroup(int $groupMemberId): array
     {
-        return $this->request('DELETE', "/api/3/groupMembers/{$groupId}");
+        return $this->request('DELETE', "/api/3/groupMembers/{$groupMemberId}");
     }
 
+    // -------------------------------------------------------------------------
+    // Field options and list relationships
+    // -------------------------------------------------------------------------
+
     /**
-     * Add options to a field (bulk operation)
-     * 
-     * @param array $data Field options data
-     * @return array The created field options data
-     * @link https://developers.activecampaign.com/reference/create-a-fieldoptions-bulk
+     * Add options to a field (bulk operation).
+     *
+     * @param array<string, mixed> $data Payload with a top-level "fieldOptions" list of {field, value, label?, orderid?, isdefault?}
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-custom-field-options
      */
     public function addOptions(array $data): array
     {
         return $this->request('POST', '/api/3/fieldOption/bulk', ['json' => $data]);
+    }
+
+    /**
+     * Make a custom field available to a list.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "fieldRel" key (field, relid)
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-a-custom-field-relationship-to-lists
+     */
+    public function addToList(array $data): array
+    {
+        return $this->request('POST', '/api/3/fieldRels', ['json' => $data]);
+    }
+
+    /**
+     * Remove a custom field / list relationship.
+     *
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/delete-a-custom-field-relationship-to-lists
+     */
+    public function removeFromList(int $fieldRelId): array
+    {
+        return $this->request('DELETE', "/api/3/fieldRels/{$fieldRelId}");
     }
 }

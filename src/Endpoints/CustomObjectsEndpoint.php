@@ -1,35 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace xdubois\ActiveCampaign\Endpoints;
 
 use xdubois\ActiveCampaign\ActiveCampaignClient;
-use xdubois\ActiveCampaign\Configuration;
 
 /**
- * Custom Objects endpoint for managing custom objects in ActiveCampaign
- * 
+ * Custom Objects endpoint for managing custom object schemas and records.
+ *
  * @link https://developers.activecampaign.com/reference/custom-objects
  */
 class CustomObjectsEndpoint extends ActiveCampaignClient
 {
-    /**
-     * Constructor - supports both new Configuration object and legacy parameters for backward compatibility
-     */
-    public function __construct($apiTokenOrConfig, ?string $accountUrl = null)
-    {
-        if ($apiTokenOrConfig instanceof Configuration) {
-            parent::__construct($apiTokenOrConfig);
-        } else {
-            // Legacy constructor for backward compatibility
-            parent::__construct($apiTokenOrConfig, $accountUrl);
-        }
-    }
+    // -------------------------------------------------------------------------
+    // Schemas
+    // -------------------------------------------------------------------------
 
     /**
-     * Create a new custom object schema
-     * 
-     * @param array $data Schema data
-     * @return array The created schema data
+     * Create a new custom object schema.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "schema" key (slug, labels, fields, relationships)
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/create-a-schema
      */
     public function createSchema(array $data): array
@@ -38,10 +30,33 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Retrieve a specific custom object schema
-     * 
-     * @param string $schemaId Schema ID
-     * @return array The schema data
+     * Create a public schema.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "schema" key
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-a-public-schema
+     */
+    public function createPublicSchema(array $data): array
+    {
+        return $this->request('POST', '/api/3/customObjects/schemas/public', ['json' => $data]);
+    }
+
+    /**
+     * Create a child schema of a public schema.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "schema" key
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-a-child-schema
+     */
+    public function createChildSchema(string $parentSchemaId, array $data): array
+    {
+        return $this->request('POST', "/api/3/customObjects/schemas/{$parentSchemaId}/child", ['json' => $data]);
+    }
+
+    /**
+     * Retrieve a specific custom object schema.
+     *
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/retrieve-a-schema
      */
     public function getSchema(string $schemaId): array
@@ -50,10 +65,10 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * List custom object schemas with optional filtering
-     * 
-     * @param array $queryParams Optional query parameters for filtering
-     * @return array List of schemas with pagination info
+     * List custom object schemas with optional filtering.
+     *
+     * @param array<string, mixed> $queryParams
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/list-all-schemas
      */
     public function listSchemas(array $queryParams = []): array
@@ -62,11 +77,10 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Update an existing custom object schema
-     * 
-     * @param string $schemaId Schema ID
-     * @param array $data Updated schema data
-     * @return array The updated schema data
+     * Update an existing custom object schema.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "schema" key
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/update-a-schema
      */
     public function updateSchema(string $schemaId, array $data): array
@@ -75,10 +89,9 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Delete a custom object schema
-     * 
-     * @param string $schemaId Schema ID
-     * @return array Confirmation of deletion
+     * Delete a custom object schema.
+     *
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/delete-a-schema
      */
     public function deleteSchema(string $schemaId): array
@@ -87,25 +100,67 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Create a new custom object record
-     * 
-     * @param string $schemaId Schema ID
-     * @param array $data Record data
-     * @return array The created record data
-     * @link https://developers.activecampaign.com/reference/create-a-record
+     * Delete a field from a schema.
+     *
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/delete-a-field-1
      */
-    public function createRecord(string $schemaId, array $data): array
+    public function deleteSchemaField(string $schemaId, string $fieldId): array
+    {
+        return $this->request('DELETE', "/api/3/customObjects/schemas/{$schemaId}/fields/{$fieldId}");
+    }
+
+    // -------------------------------------------------------------------------
+    // Records
+    // -------------------------------------------------------------------------
+
+    /**
+     * Create or update a record (upsert matched on "id" and/or "externalId").
+     *
+     * @param array<string, mixed> $data Payload with a top-level "record" key (externalId, fields, relationships)
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-or-update-record
+     */
+    public function createOrUpdateRecord(string $schemaId, array $data): array
     {
         return $this->request('POST', "/api/3/customObjects/records/{$schemaId}", ['json' => $data]);
     }
 
     /**
-     * Retrieve a specific custom object record
-     * 
-     * @param string $schemaId Schema ID
-     * @param string $recordId Record ID
-     * @return array The record data
-     * @link https://developers.activecampaign.com/reference/retrieve-a-record
+     * Create a new custom object record. Alias of createOrUpdateRecord().
+     *
+     * @param array<string, mixed> $data Payload with a top-level "record" key
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-or-update-record
+     */
+    public function createRecord(string $schemaId, array $data): array
+    {
+        return $this->createOrUpdateRecord($schemaId, $data);
+    }
+
+    /**
+     * Update an existing record.
+     *
+     * The API has no dedicated update endpoint: records are updated through the
+     * upsert endpoint, so the record ID is injected into the payload.
+     *
+     * @param array<string, mixed> $data Payload with a top-level "record" key
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/create-or-update-record
+     */
+    public function updateRecord(string $schemaId, string $recordId, array $data): array
+    {
+        $record = isset($data['record']) && is_array($data['record']) ? $data['record'] : $data;
+        $data['record'] = array_merge($record, ['id' => $recordId]);
+
+        return $this->createOrUpdateRecord($schemaId, $data);
+    }
+
+    /**
+     * Retrieve a specific custom object record.
+     *
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/get-a-single-record
      */
     public function getRecord(string $schemaId, string $recordId): array
     {
@@ -113,12 +168,22 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * List custom object records with optional filtering
-     * 
-     * @param string $schemaId Schema ID
-     * @param array $queryParams Optional query parameters for filtering
-     * @return array List of records with pagination info
-     * @link https://developers.activecampaign.com/reference/list-all-records
+     * Retrieve a record by its external ID.
+     *
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/get-a-single-record-using-external-id
+     */
+    public function getRecordByExternalId(string $schemaId, string $externalId): array
+    {
+        return $this->request('GET', "/api/3/customObjects/records/{$schemaId}/external/" . rawurlencode($externalId));
+    }
+
+    /**
+     * List custom object records with optional filtering.
+     *
+     * @param array<string, mixed> $queryParams
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/list-records-created-from-a-schema
      */
     public function listRecords(string $schemaId, array $queryParams = []): array
     {
@@ -126,29 +191,24 @@ class CustomObjectsEndpoint extends ActiveCampaignClient
     }
 
     /**
-     * Update an existing custom object record
-     * 
-     * @param string $schemaId Schema ID
-     * @param string $recordId Record ID
-     * @param array $data Updated record data
-     * @return array The updated record data
-     * @link https://developers.activecampaign.com/reference/update-a-record
-     */
-    public function updateRecord(string $schemaId, string $recordId, array $data): array
-    {
-        return $this->request('PUT', "/api/3/customObjects/records/{$schemaId}/{$recordId}", ['json' => $data]);
-    }
-
-    /**
-     * Delete a custom object record
-     * 
-     * @param string $schemaId Schema ID
-     * @param string $recordId Record ID
-     * @return array Confirmation of deletion
+     * Delete a custom object record.
+     *
+     * @return array<mixed>
      * @link https://developers.activecampaign.com/reference/delete-a-record
      */
     public function deleteRecord(string $schemaId, string $recordId): array
     {
         return $this->request('DELETE', "/api/3/customObjects/records/{$schemaId}/{$recordId}");
+    }
+
+    /**
+     * Delete a record by its external ID.
+     *
+     * @return array<mixed>
+     * @link https://developers.activecampaign.com/reference/delete-a-record-by-external-id
+     */
+    public function deleteRecordByExternalId(string $schemaId, string $externalId): array
+    {
+        return $this->request('DELETE', "/api/3/customObjects/records/{$schemaId}/external/" . rawurlencode($externalId));
     }
 }
