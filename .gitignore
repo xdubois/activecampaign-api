@@ -15,9 +15,15 @@ composer.lock
 .DS_Store
 Thumbs.db
 
-# Tests
+# Tests & tooling caches
 /coverage/
 .phpunit.result.cache
+/.phpunit.cache/
+/.phpstan.cache/
+.php-cs-fixer.cache
+phpunit.xml
+phpstan.neon
+.php-cs-fixer.php
 
 # Build artifacts
 /build/
