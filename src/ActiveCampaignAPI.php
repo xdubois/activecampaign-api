@@ -1,133 +1,178 @@
 <?php
 
+declare(strict_types=1);
+
 namespace xdubois\ActiveCampaign;
 
-use xdubois\ActiveCampaign\Endpoints\DealsEndpoint;
-use xdubois\ActiveCampaign\Endpoints\ContactsEndpoint;
+use GuzzleHttp\ClientInterface;
 use xdubois\ActiveCampaign\Endpoints\AccountsEndpoint;
-use xdubois\ActiveCampaign\Endpoints\CustomObjectsEndpoint;
+use xdubois\ActiveCampaign\Endpoints\ContactsEndpoint;
 use xdubois\ActiveCampaign\Endpoints\CustomFieldsEndpoint;
+use xdubois\ActiveCampaign\Endpoints\CustomObjectsEndpoint;
+use xdubois\ActiveCampaign\Endpoints\DealsEndpoint;
+use xdubois\ActiveCampaign\Endpoints\ListsEndpoint;
+use xdubois\ActiveCampaign\Endpoints\TagsEndpoint;
+use xdubois\ActiveCampaign\Endpoints\UsersEndpoint;
+use xdubois\ActiveCampaign\Endpoints\WebhooksEndpoint;
 
 /**
- * Main ActiveCampaign API client class
- * 
- * Provides access to all ActiveCampaign API v3 endpoints including:
- * - Deals
- * - Contacts  
- * - Accounts
- * - Custom Objects
- * - Custom Fields
- * 
- * @author Xavier Dubois <xavier@example.com>
- * @version 1.0.0
+ * Main ActiveCampaign API client.
+ *
+ * Provides access to the ActiveCampaign API v3 endpoints: contacts, deals,
+ * accounts, custom objects, custom fields, tags, lists, webhooks and users.
+ * All endpoints share a single underlying HTTP client.
+ *
+ * @property-read DealsEndpoint $deals
+ * @property-read ContactsEndpoint $contacts
+ * @property-read AccountsEndpoint $accounts
+ * @property-read CustomObjectsEndpoint $customObjects
+ * @property-read CustomFieldsEndpoint $customFields
+ * @property-read TagsEndpoint $tags
+ * @property-read ListsEndpoint $lists
+ * @property-read WebhooksEndpoint $webhooks
+ * @property-read UsersEndpoint $users
  */
 class ActiveCampaignAPI
 {
+    public const VERSION = '2.0.0';
+
+    protected Configuration $config;
+    protected ClientInterface $httpClient;
     protected DealsEndpoint $deals;
     protected ContactsEndpoint $contacts;
     protected AccountsEndpoint $accounts;
     protected CustomObjectsEndpoint $customObjects;
     protected CustomFieldsEndpoint $customFields;
-    protected Configuration $config;
+    protected TagsEndpoint $tags;
+    protected ListsEndpoint $lists;
+    protected WebhooksEndpoint $webhooks;
+    protected UsersEndpoint $users;
 
     /**
-     * Constructor - supports both new Configuration object and legacy parameters for backward compatibility
-     * 
-     * @param Configuration|string $apiTokenOrConfig API token string or Configuration object
-     * @param string|null $accountUrl Account URL (only used if first parameter is string)
-     * 
-     * @example Using with Configuration object (recommended):
+     * @param Configuration|string $apiTokenOrConfig Configuration object or API token (legacy constructor)
+     * @param string|null $accountUrl Account URL, required when the first argument is an API token
+     * @param ClientInterface|null $httpClient Optional pre-configured Guzzle client shared by every endpoint
+     *
+     * @example Using a Configuration object (recommended):
      * ```php
-     * $config = new Configuration('your-api-token', 'https://yourapp.api-us1.com');
+     * $config = new Configuration('your-api-token', 'https://youraccount.api-us1.com');
      * $api = new ActiveCampaignAPI($config);
      * ```
-     * 
-     * @example Using legacy constructor (maintained for backward compatibility):
+     *
+     * @example Using the legacy constructor:
      * ```php
-     * $api = new ActiveCampaignAPI('your-api-token', 'https://yourapp.api-us1.com');
+     * $api = new ActiveCampaignAPI('your-api-token', 'https://youraccount.api-us1.com');
      * ```
      */
-    public function __construct($apiTokenOrConfig, ?string $accountUrl = null)
-    {
+    public function __construct(
+        #[\SensitiveParameter]
+        Configuration|string $apiTokenOrConfig,
+        ?string $accountUrl = null,
+        ?ClientInterface $httpClient = null,
+    ) {
         if ($apiTokenOrConfig instanceof Configuration) {
             $this->config = $apiTokenOrConfig;
         } else {
-            // Legacy constructor for backward compatibility
+            if ($accountUrl === null) {
+                throw new \InvalidArgumentException('An account URL is required when passing an API token string');
+            }
             $this->config = new Configuration($apiTokenOrConfig, $accountUrl);
         }
 
-        // Initialize all endpoint classes with the configuration
-        $this->deals = new DealsEndpoint($this->config);
-        $this->contacts = new ContactsEndpoint($this->config);
-        $this->accounts = new AccountsEndpoint($this->config);
-        $this->customObjects = new CustomObjectsEndpoint($this->config);
-        $this->customFields = new CustomFieldsEndpoint($this->config);
+        $this->httpClient = $httpClient ?? ActiveCampaignClient::createHttpClient($this->config);
+
+        $this->deals = new DealsEndpoint($this->config, null, $this->httpClient);
+        $this->contacts = new ContactsEndpoint($this->config, null, $this->httpClient);
+        $this->accounts = new AccountsEndpoint($this->config, null, $this->httpClient);
+        $this->customObjects = new CustomObjectsEndpoint($this->config, null, $this->httpClient);
+        $this->customFields = new CustomFieldsEndpoint($this->config, null, $this->httpClient);
+        $this->tags = new TagsEndpoint($this->config, null, $this->httpClient);
+        $this->lists = new ListsEndpoint($this->config, null, $this->httpClient);
+        $this->webhooks = new WebhooksEndpoint($this->config, null, $this->httpClient);
+        $this->users = new UsersEndpoint($this->config, null, $this->httpClient);
     }
 
-    /**
-     * Get the deals endpoint for managing deals
-     */
     public function deals(): DealsEndpoint
     {
         return $this->deals;
     }
 
-    /**
-     * Get the contacts endpoint for managing contacts
-     */
     public function contacts(): ContactsEndpoint
     {
         return $this->contacts;
     }
 
-    /**
-     * Get the accounts endpoint for managing accounts
-     */
     public function accounts(): AccountsEndpoint
     {
         return $this->accounts;
     }
 
-    /**
-     * Get the custom objects endpoint for managing custom objects
-     */
     public function customObjects(): CustomObjectsEndpoint
     {
         return $this->customObjects;
     }
 
-    /**
-     * Get the custom fields endpoint for managing custom fields
-     */
     public function customFields(): CustomFieldsEndpoint
     {
         return $this->customFields;
     }
 
-    /**
-     * Get the configuration object
-     */
+    public function tags(): TagsEndpoint
+    {
+        return $this->tags;
+    }
+
+    public function lists(): ListsEndpoint
+    {
+        return $this->lists;
+    }
+
+    public function webhooks(): WebhooksEndpoint
+    {
+        return $this->webhooks;
+    }
+
+    public function users(): UsersEndpoint
+    {
+        return $this->users;
+    }
+
     public function getConfiguration(): Configuration
     {
         return $this->config;
     }
 
-    // Legacy property access for backward compatibility
-    public function __get(string $name)
+    /**
+     * The Guzzle client shared by all endpoints.
+     */
+    public function getHttpClient(): ClientInterface
     {
-        switch ($name) {
-            case 'deals':
-                return $this->deals;
-            case 'contacts':
-                return $this->contacts;
-            case 'accounts':
-                return $this->accounts;
-            case 'customObjects':
-                return $this->customObjects;
-            case 'customFields':
-                return $this->customFields;
-            default:
-                throw new \InvalidArgumentException("Property '$name' does not exist");
-        }
+        return $this->httpClient;
+    }
+
+    /**
+     * Legacy property access ($api->contacts) kept for backward compatibility.
+     */
+    public function __get(string $name): ActiveCampaignClient
+    {
+        return match ($name) {
+            'deals' => $this->deals,
+            'contacts' => $this->contacts,
+            'accounts' => $this->accounts,
+            'customObjects' => $this->customObjects,
+            'customFields' => $this->customFields,
+            'tags' => $this->tags,
+            'lists' => $this->lists,
+            'webhooks' => $this->webhooks,
+            'users' => $this->users,
+            default => throw new \InvalidArgumentException("Property '$name' does not exist"),
+        };
+    }
+
+    public function __isset(string $name): bool
+    {
+        return in_array($name, [
+            'deals', 'contacts', 'accounts', 'customObjects', 'customFields', 'tags', 'lists', 'webhooks', 'users',
+        ], true);
     }
 }

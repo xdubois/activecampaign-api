@@ -6,12 +6,27 @@
     "homepage": "https://github.com/xdubois/activecampaign-api",
     "license": "MIT",
     "require": {
-        "php": "^7.4|^8.0",
-        "guzzlehttp/guzzle": "^7.0"
+        "php": "^8.1",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^7.9 || ^8.0",
+        "psr/http-client": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^10.5 || ^11.5 || ^12.0 || ^13.0"
     },
     "autoload": {
         "psr-4": {
             "xdubois\\ActiveCampaign\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "xdubois\\ActiveCampaign\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -23,9 +38,21 @@
         "issues": "https://github.com/xdubois/activecampaign-api/issues",
         "source": "https://github.com/xdubois/activecampaign-api"
     },
+    "scripts": {
+        "test": "phpunit",
+        "phpstan": "phpstan analyse",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
+        "check": [
+            "@cs",
+            "@phpstan",
+            "@test"
+        ]
+    },
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
